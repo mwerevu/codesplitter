@@ -46,3 +46,6 @@ run;
 proc print data=temp5(where=(i gt 3));
 run;
 ;
+data OUTPUTS.manual1;
+set INPUTS.manual0;
+run;
