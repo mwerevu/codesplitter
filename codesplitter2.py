@@ -25,9 +25,9 @@ prog = orig.read()
 
 
 def parseDataChunk(thisChunk):
-    outset = re.search(r'(?<=set )(\w|\.)+',thisChunk,flags=re.MULTILINE)
+    outset = re.search(r'(?<=set )\s*(?P<ds>(\w|\.)+)',thisChunk,flags=re.MULTILINE)
     if outset:
-        outds=outset.group(0)
+        outds=outset.group('ds')
     else:
         outds="(FAIL)"
     inset = re.search(r'\s*(?P<ds>(\w|\.)+)',thisChunk,flags=re.MULTILINE)
