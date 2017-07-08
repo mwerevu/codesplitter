@@ -26,8 +26,15 @@ data temp1;
      set temp2 temp3;
 run;
 
-data temp1;
+data temp1 temp2(drop=b);
      set
+	temp2(keep=a)
+	temp3(keep=b)
+	;
+run;
+
+data temp1 temp2(drop=b);
+     merge
 	temp2(keep=a)
 	temp3(keep=b)
 	;

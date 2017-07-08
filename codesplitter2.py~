@@ -1,0 +1,8 @@
+import re
+
+orig = open("./debug.sas","r")
+prog = orig.read()
+
+mixed = re.split(r'(^data|^proc)',prog,flags=re.DOTALL)
+
+print mixed

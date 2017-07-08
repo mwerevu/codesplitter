@@ -32,41 +32,67 @@ class DataChunk(Chunk):
 
     def __init__(self,inputcode):
         self.chunktype="data"
-        
-        # Search for an input dataset.
-        # The model is:    (?P<ds>\(\.*\))
-        #testset=re.findall(r'\w*(\(\.*\))*',inputcode,flags=re.MULTILINE)
-        test1=re.search(r'(?:set )(?P<dataline>\s*.*?)(?:;)',inputcode,flags=re.M|re.S)
+
+        ### FIRST, test for a "set" statement.
+        test1=re.search(r"""(?:set\s+)           # Look for set statement + spaces and discard.
+                            (?P<setline>.*?\s*)  # Look for whatever is in the middle.
+                            (?=;)                # Look ahead for the ending semicolon.
+                            """,inputcode,flags=re.M|re.S|re.X)
         if test1:
-            print test1.group('dataline')
-            test2=re.findall(r'(\w|\.)+?',test1.group('dataline'),flags=re.M|re.S)
-            test2=re.split(r'(\(.*?\)|\s+)',test1.group('dataline'),flags=re.M|re.S)
+            test2=re.findall(r"""(?:\s*)     # Find a discard any leading spaces
+                                 ([\.\w]*)    # Find the dataset name, possibly with a period in it.
+                                 (?:\(.*?\))* # Find an optional parenthetical and discard it.
+                                 """,test1.group('setline'),flags=re.M|re.S|re.X)
             if test2:
-                print test2
+                self.indatasets=[x for x in test2 if x != '']
+                self.creatortype="set"
+            else:
+                self.indatasets=["(NONE)"]
+                self.creatortype="(NONE)"
+        else:
+            ### IF NOT, test for a "merge" statement.
+            test1=re.search(r"""(?:merge\s+)           # Look for set statement + spaces and discard.
+                                (?P<setline>.*?\s*)  # Look for whatever is in the middle.
+                                (?=;)                # Look ahead for the ending semicolon.
+                                """,inputcode,flags=re.M|re.S|re.X)
+            if test1:
+                test2=re.findall(r"""(?:\s*)     # Find a discard any leading spaces
+                                  ([\.\w]*)    # Find the dataset name, possibly with a period in it.
+                                  (?:\(.*?\))* # Find an optional parenthetical and discard it.
+                                  """,test1.group('setline'),flags=re.M|re.S|re.X)
+                if test2:
+                    self.indatasets=[x for x in test2 if x != '']
+                    self.creatortype="merge"
+                else:
+                    self.indatasets=["(NONE)"]
+                    self.creatortype="(NONE)"
                 
-        inset=re.search(r'(?<=set )\s*(?P<ds>(\w|\.)+)',inputcode,flags=re.MULTILINE)
-        if inset:
-            self.indatasets=inset.group('ds')
-        else:
-            inds="(FAIL)"
             
-        # Search for an output dataset.
-        outset = re.search(r'\s*(?P<ds>(\w|\.)+)',inputcode,flags=re.MULTILINE)
-        if outset:
-            self.outdatasets=outset.group('ds')
-            self.creatortype="set"
+        ### NOW, get output datasets.
+        outset = re.search(r'\s*(?P<ds>[\w\.]+)',inputcode,flags=re.MULTILINE)
+
+        test1=re.search(r"^.*?;",inputcode,flags=re.M|re.S)
+        if test1:
+            test2=re.findall(r"""(?:\s*)     # Find a discard any leading spaces
+                                 ([\.\w]*)    # Find the dataset name, possibly with a period in it.
+                                 (?:\(.*?\))* # Find an optional parenthetical and discard it.
+                                 """,test1.group(0),flags=re.M|re.S|re.X)
+            if test2:
+                self.outdatasets=[x for x in test2 if x != '']
+            else:
+                self.outdatasets=['(NONE)']
         else:
-            self.outdatasets="(NONE)"
-            self.creatortype="(NONE)"
+            self.outdatasets=['(NONE)']
 
             
     def parseDataChunk(thisChunk):
+        # OLD CODE
         outset = re.search(r'(?<=set )\s*(?P<ds>(\w|\.)+)',thisChunk,flags=re.MULTILINE)
         if outset:
             outds=outset.group('ds')
         else:
             outds="(FAIL)"
-        inset = re.search(r'\s*(?P<ds>(\w|\.)+)',thisChunk,flags=re.MULTILINE)
+        inset = re.search(r'\s*(?P<ds>[\w\.]+)',thisChunk,flags=re.MULTILINE)
         if inset:
             inds=inset.group('ds')
         else:
