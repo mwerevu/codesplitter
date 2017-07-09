@@ -1,6 +1,20 @@
 import re
 import pprint
 
+# TO DO:
+# * Handle Double Sets (Low Priority)
+# * Expand Proc handling (High Priority)
+#   - Proc Summary
+#   - Proc Means
+#   - Proc Freq
+#   - Proc Something...
+# * Output to JSON (Mid Priority)
+# * Cleanup existing regexp code (Mid Priority)
+# * Write unit tests for different cases
+
+
+
+
 class Chunk:
     'Chunk class is a generic bit of a program.'
 
@@ -105,13 +119,24 @@ class ProcChunk(Chunk):
 
     def __init__(self,thisChunk):
         self.chunktype="proc"
-        proctype = re.match(r'^(\w|\.)+',thisChunk)
+        proctype = re.match(r'^[\w\.]+',thisChunk)
         if proctype:
             self.proctype=proctype.group(0)
         else:
             self.proctype="(NONE)"
-        self.indatasets=None
-        self.outdatasets=None
+
+        test1=re.search(r'(?<=data=)[\w\.]+',thisChunk)
+        if test1:
+            self.indatasets=test1.group(0)
+        else:
+            self.indatasets=['(None)']
+
+        test1=re.search(r'(?<=out=)[\w\.]+',thisChunk)
+        if test1:
+            self.outdatasets=test1.group(0)
+        else:
+            self.outdatasets=['(None)']
+
 
         
 

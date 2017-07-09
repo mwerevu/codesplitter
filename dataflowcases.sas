@@ -14,10 +14,6 @@ data OUTPUTS.temp1(drop=a);
     b=2;
 run;
 
-/* PROC MEANS */
-proc freq data=temp1;
-     tables b;
-run;
 
 
 /* DATA block with multiple SET inputs
@@ -39,3 +35,29 @@ data temp1 temp2(drop=b);
 	temp3(keep=b)
 	;
 run;
+
+
+/* PROC FREQ */
+proc freq data=temp1;
+     tables b / out=OUTPUTS.freqout;
+run;
+/* PROC MEANS */
+proc means data=temp1;
+     output out=meansout sum(b)=;
+run;
+/* PROC SUMMARY */
+proc summary data=temp1;
+     output out=summout sum(b)=;
+run;
+/* PROC IMPORT */
+proc import datafile="temp1.csv"
+     out=summout
+     DBMS=CSV
+     REPLACE;
+run;
+/* PROC EXPORT */
+proc export data=temp1
+     outfile="export.csv"
+     DBMS=CSV
+     REPLACE;
+run;     
